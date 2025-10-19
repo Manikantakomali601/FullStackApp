@@ -22,7 +22,7 @@ function App() {
   };
 
   const deleteEmployee = async (id) => {
-    await axios.delete(`http://localhost:9090/api/employees${id}`);
+    await axios.delete(`http://localhost:9090/api/employees/${id}`);
     loadEmployees();
   };
 
