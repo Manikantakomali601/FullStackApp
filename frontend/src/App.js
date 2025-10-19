@@ -4,24 +4,25 @@ import axios from 'axios';
 function App() {
   const [employees, setEmployees] = useState([]);
   const [form, setForm] = useState({ name: '', department: '', salary: '' });
+	const BACKEND_URL = 'http://localhost:9090/api/employees';
 
   useEffect(() => {
     loadEmployees();
   }, []);
 
   const loadEmployees = async () => {
-    const res = await axios.get('http://localhost:8080/api/employees');
+    const res = await axios.get('http://localhost:9090/api/employees');
     setEmployees(res.data);
   };
 
   const addEmployee = async () => {
-    await axios.post('http://localhost:8080/api/employees', form);
+    await axios.post('http://localhost:9090/api/employees', form);
     setForm({ name: '', department: '', salary: '' });
     loadEmployees();
   };
 
   const deleteEmployee = async (id) => {
-    await axios.delete(`http://localhost:8080/api/employees/${id}`);
+    await axios.delete(`http://localhost:9090/api/employees${id}`);
     loadEmployees();
   };
 
