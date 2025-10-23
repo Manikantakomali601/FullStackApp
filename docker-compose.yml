@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  mysqlsrv:
+    image: mysql
+    container_name: mysqlsrv
+    restart : always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: employee_info
+      MYSQL_USER: manikantakomali
+      MYSQL_PASSWORD: Mani@2525
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - ownbridge
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+  backendapp:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: backendapp:1.0
+    container_name: employee_backendapp
+    restart : always
+    environment:
+      MYSQL_USER: manikantakomali
+      MYSQL_PASS: Mani@2525
+      MYSQLSRV_URL: jdbc:mysql://mysqlsrv:3306/employee_info
+    depends_on:
+      mysqlsrv:
+        condition: service_healthy
+    ports:
+      - "9090:8080"
+    networks:
+      - ownbridge
+  frontendapp:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontendapp:1.0
+    container_name: employee_frontendapp
+    restart : always
+    depends_on:
+      mysqlsrv:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    networks:
+      - ownbridge
+networks:
+  ownbridge:
+    driver: bridge
+volumes:
+  db_data: {}
+
