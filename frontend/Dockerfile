@@ -1,45 +1,24 @@
-#FROM node:18
-#WORKDIR /app
-#COPY . .
-#RUN apt-get update && apt-get install -y xsel
-#RUN npm install && npm run build && npm install -g serve
-#EXPOSE 3000
-#ENTRYPOINT ["serve", "-s", "build", "-l", "3000"]
-
-# ---- Stage 1: Build the React app ----
+# -------------- Stage 1: Build React -----------------
 FROM node:18 AS builder
 
-# Set working directory
 WORKDIR /app
-
-# Copy package.json and package-lock.json first (for better caching)
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy rest of the source code
 COPY . .
-
-# Build the React app for production
 RUN npm run build
 
 
-# ---- Stage 2: Serve the built app ----
-FROM node:18-slim
+# -------------- Stage 2: Serve using Nginx -----------------
+FROM nginx:1.25-alpine
 
-# Install only what's needed to serve the app
-RUN npm install -g serve
+# Remove default nginx static files
+RUN rm -rf /usr/share/nginx/html/*
 
-# Set working directory
-WORKDIR /app
+# Copy build artifacts
+COPY --from=builder /app/build /usr/share/nginx/html
 
-# Copy build output from builder stage
-COPY --from=builder /app/build ./build
+# Expose port 80
+EXPOSE 80
 
-# Expose port 3000 for the frontend
-EXPOSE 3000
-
-# Run the app with serve
-CMD ["serve", "-s", "build", "-l", "3000"]
-
+CMD ["nginx", "-g", "daemon off;"]
